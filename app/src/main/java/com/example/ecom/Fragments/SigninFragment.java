@@ -1,13 +1,13 @@
 package com.example.ecom.Fragments;
 
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +17,19 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.example.ecom.HomeScreen;
 import com.example.ecom.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,6 +44,7 @@ public class SigninFragment extends Fragment implements View.OnClickListener {
     private Button btnSignin;
     private TextView txtForgotPassword;
     private ProgressBar progressBar;
+    private FirebaseAuth firebaseAuth;
 
 
     public SigninFragment() {
@@ -63,6 +75,56 @@ public class SigninFragment extends Fragment implements View.OnClickListener {
         txtDontHaveAcct.setOnClickListener(this);
         btnSignin.setOnClickListener(this);
         btnClose.setOnClickListener(this);
+        txtForgotPassword.setOnClickListener(this);
+        firebaseAuth = FirebaseAuth.getInstance();
+        edtEmail.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkInputs();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+        edtPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkInputs();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+    }
+
+    private void checkInputs() {
+        if (!TextUtils.isEmpty(edtEmail.getText())){
+            if (!TextUtils.isEmpty(edtPassword.getText())){
+                btnSignin.setEnabled(true);
+                btnSignin.setTextColor(getResources().getColor(R.color.colorAccent));
+            }else {
+                btnSignin.setEnabled(false);
+                btnSignin.setTextColor(Color.argb(50,255,255,255));
+            }
+        }else {
+            btnSignin.setEnabled(false);
+            btnSignin.setTextColor(Color.argb(50,255,255,255));
+        }
+
     }
 
     private void setFragment(Fragment fragment) {
@@ -84,15 +146,51 @@ public class SigninFragment extends Fragment implements View.OnClickListener {
                 break;
 
             case  R.id.signin_close_button:
-
+                startActivity(new Intent(getActivity(),HomeScreen.class));
+                getActivity().finish();
                 break;
 
             case  R.id.button_signin:
+                checkEmailAndPassword();
+                break;
 
+            case  R.id.textview_forgot_password:
+               setFragment(new ForgotPassword());
                 break;
 
                 default:
                     break;
+        }
+    }
+
+
+
+    private void checkEmailAndPassword() {
+
+        if (Patterns.EMAIL_ADDRESS.matcher(edtEmail.getText().toString()).matches()){
+            if(edtPassword.length() >=8){
+                progressBar.setVisibility(View.VISIBLE);
+                btnSignin.setEnabled(false);
+                btnSignin.setTextColor(Color.argb(50,255,255,255));
+                firebaseAuth.signInWithEmailAndPassword(edtEmail.getText().toString(),edtPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if(task.isSuccessful()){
+                            startActivity(new Intent(getActivity(), HomeScreen.class));
+                            getActivity().finish();
+                        }else {
+                            Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.INVISIBLE);
+                            btnSignin.setEnabled(true);
+                            btnSignin.setTextColor(getResources().getColor(R.color.colorAccent));
+                        }
+                    }
+                });
+            }else {
+                Toast.makeText(getActivity(), "incorrect email or password", Toast.LENGTH_SHORT).show();
+            }
+        }else {
+            Toast.makeText(getActivity(), "incorrect email or password", Toast.LENGTH_SHORT).show();
         }
     }
 }

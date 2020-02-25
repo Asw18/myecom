@@ -4,12 +4,6 @@ package com.example.ecom.Fragments;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -25,12 +19,22 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.example.ecom.HomeScreen;
 import com.example.ecom.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -46,7 +50,7 @@ public class SignupFragment extends Fragment {
     private ImageButton btnClose;
     private ProgressBar progressBar;
     private FirebaseAuth firebaseAuth;
-    String pattern = "[a-zA-Z0-9._-]+@[a-z]+.[a-z]+";
+    private FirebaseFirestore firebaseFirestore;
 
 
     public SignupFragment() {
@@ -69,6 +73,7 @@ public class SignupFragment extends Fragment {
         btnSignUp = view.findViewById(R.id.button_signup);
         progressBar = view.findViewById(R.id.progressBar_signup);
         firebaseAuth = FirebaseAuth.getInstance();
+        firebaseFirestore = FirebaseFirestore.getInstance();
 
 
         return view;
@@ -163,6 +168,8 @@ public class SignupFragment extends Fragment {
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                startActivity(new Intent(getActivity(),HomeScreen.class));
+                getActivity().finish();
 
             }
         });
@@ -216,8 +223,24 @@ public class SignupFragment extends Fragment {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()){
-                           startActivity(new Intent(getActivity(), HomeScreen.class));
-                           getActivity().finish();
+                            Map<Object,String> userData = new HashMap<>();
+                            userData.put("fullname",edtFullName.getText().toString());
+                            firebaseFirestore.collection("USERS").add(userData).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentReference> task) {
+                                    if (task.isSuccessful()){
+                                        startActivity(new Intent(getActivity(), HomeScreen.class));
+                                        getActivity().finish();
+                                    }else {
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                        btnSignUp.setEnabled(true);
+                                        btnSignUp.setTextColor(getResources().getColor(R.color.colorAccent));
+                                        Toast.makeText(getActivity(), task.getException().getMessage().toString(), Toast.LENGTH_SHORT).show();
+                                    }
+
+                                }
+                            });
+
                         }else {
                             progressBar.setVisibility(View.INVISIBLE);
                             btnSignUp.setEnabled(true);
