@@ -5,14 +5,16 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +35,10 @@ public class ForgotPassword extends Fragment {
     private TextView txtGoback;
     private FrameLayout frameLayout;
     private FirebaseAuth firebaseAuth;
+    private ViewGroup viewGroup;
+    private ProgressBar progressBar;
+    private ImageView iconEmail;
+    private TextView txtEmail;
 
 
     public ForgotPassword() {
@@ -49,6 +55,10 @@ public class ForgotPassword extends Fragment {
        btnReset = view.findViewById(R.id.btnReset);
        txtGoback = view.findViewById(R.id.txtGoback);
        frameLayout = getActivity().findViewById(R.id.register_framelayout);
+       viewGroup = view.findViewById(R.id.linearLayout_forgot_password);
+       iconEmail = view.findViewById(R.id.iconEmail);
+       txtEmail = view.findViewById(R.id.textEmail);
+       progressBar = view.findViewById(R.id.progressBar_fotgot);
        firebaseAuth = FirebaseAuth.getInstance();
        return view;
     }
@@ -76,16 +86,37 @@ public class ForgotPassword extends Fragment {
         btnReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                TransitionManager.beginDelayedTransition(viewGroup);
+                btnReset.setEnabled(false);
+                btnReset.setTextColor(Color.argb(50,255,255,255));
+                progressBar.setVisibility(View.VISIBLE);
+                iconEmail.setVisibility(View.VISIBLE);
 
                 firebaseAuth.sendPasswordResetEmail(edtResetEmail.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()){
-                            Toast.makeText(getActivity(), "email sent succesfully", Toast.LENGTH_SHORT).show();
+
+                            txtEmail.setVisibility(View.VISIBLE);
+                            txtEmail.setTextColor(getResources().getColor(R.color.colorGreen));
+                            txtEmail.setText("Mail to reset password sent to your mail address!!");
+                            iconEmail.setImageDrawable(getResources().getDrawable(R.drawable.icon_email_green));
+                            TransitionManager.beginDelayedTransition(viewGroup);
+
+                            
 
                         }else {
-                            Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+
+
+
+                            txtEmail.setTextColor(getResources().getColor(R.color.colorPrimary));
+                            txtEmail.setText(task.getException().getMessage());
+                            iconEmail.setImageDrawable(getResources().getDrawable(R.drawable.icon_email_red));
+                            TransitionManager.beginDelayedTransition(viewGroup);
+                            txtEmail.setVisibility(View.VISIBLE);
+
                         }
+                        progressBar.setVisibility(View.GONE);
                         btnReset.setEnabled(true);
                         btnReset.setTextColor(getResources().getColor(R.color.colorAccent));
                     }

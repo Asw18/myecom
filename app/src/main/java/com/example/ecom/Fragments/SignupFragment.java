@@ -168,7 +168,7 @@ public class SignupFragment extends Fragment {
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(),HomeScreen.class));
+                startActivity(new Intent(getActivity(), HomeScreen.class));
                 getActivity().finish();
 
             }
