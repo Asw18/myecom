@@ -29,10 +29,7 @@ public class HomeScreen extends AppCompatActivity implements NavigationView.OnNa
         firebaseAuth = FirebaseAuth.getInstance();
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-
-        toolbar.setTitle("");
-        toolbar.setSubtitle("");
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
 
 
