@@ -42,7 +42,7 @@
         android:label="My WishList"
         tools:layout="@layout/fragment_wishlist" />
     <fragment
-        android:id="@+id/nav_myaccount"
+        android:id="@+id/nav_account"
         android:name="com.example.ecom.ui.myaccount.MyAccountFragment"
         android:label="My Account"
         tools:layout="@layout/fragment_myaccount" />
